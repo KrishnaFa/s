@@ -1,0 +1,2989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DataViz Pro — Enterprise Data Analytics</title>
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  
+  <!-- SheetJS & Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      /* Brand colors */
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-soft: rgba(99, 102, 241, 0.08);
+      --primary-soft-hover: rgba(99, 102, 241, 0.15);
+      
+      --accent: #0ea5e9;
+      --accent-soft: rgba(14, 165, 233, 0.08);
+      
+      --success: #10b981;
+      --success-soft: rgba(16, 185, 129, 0.08);
+      
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.08);
+      
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.08);
+
+      /* Theme specific (Light Theme Default) */
+      --bg: #f8fafc;
+      --bg-hover: #f1f5f9;
+      --surface: #ffffff;
+      --surface-header: rgba(255, 255, 255, 0.8);
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --muted: #64748b;
+      --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 8px -1px rgba(15, 23, 42, 0.03);
+      --card-shadow-hover: 0 12px 30px -4px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+      
+      --radius: 16px;
+      --radius-sm: 10px;
+      --nav-h: 72px;
+      
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    body.dark-mode {
+      /* Dark Theme */
+      --bg: #090d16;
+      --bg-hover: #1e293b;
+      --surface: #111827;
+      --surface-header: rgba(9, 13, 22, 0.85);
+      --border: #1f2937;
+      --border-strong: #374151;
+      --text: #f9fafb;
+      --text-secondary: #d1d5db;
+      --muted: #9ca3af;
+      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3), 0 2px 8px -1px rgba(0, 0, 0, 0.2);
+      --card-shadow-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.45), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+      
+      --primary: #818cf8;
+      --primary-hover: #6366f1;
+      --primary-soft: rgba(129, 140, 248, 0.12);
+      --primary-soft-hover: rgba(129, 140, 248, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      background: var(--surface-header);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #ec4899);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Icon styles */
+    .icon {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* Buttons */
+    button, .btn {
+      font-family: inherit;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 1.1rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button:disabled, .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:not(:disabled):hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px -2px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-outline {
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .btn-outline:not(:disabled):hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--muted);
+      transform: translateY(-1px);
+    }
+
+    .btn-icon {
+      padding: 0.65rem;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-icon:hover {
+      color: var(--text);
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+    }
+
+    .theme-toggle-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-toggle-btn svg {
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle-btn:hover svg {
+      transform: rotate(15deg);
+    }
+
+    /* ── Sub-header Toolbar ── */
+    .dashboard-toolbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: slideDown 0.3s ease;
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .file-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid rgba(99, 102, 241, 0.15);
+    }
+
+    .sheet-select-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sheet-select-wrapper label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .styled-select {
+      appearance: none;
+      background-color: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      padding: 0.4rem 2rem 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.6rem center;
+      background-size: 0.9rem;
+    }
+
+    .styled-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    /* ── Layout & Page ── */
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ── Hero / Upload Section ── */
+    .hero-upload {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      box-shadow: var(--card-shadow);
+      text-align: center;
+      max-width: 680px;
+      margin: 4rem auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-upload::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .hero-text h2 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--text) 60%, var(--muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-text p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border-strong);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      background: var(--bg);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      transform: scale(1.01);
+    }
+
+    .dropzone-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1.25rem;
+      background: var(--primary-soft);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      transition: transform 0.3s ease;
+    }
+
+    .dropzone:hover .dropzone-icon {
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .dropzone p {
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .dropzone small {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.8rem;
+    }
+
+    .sample-trigger-wrapper {
+      margin-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .sample-link {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .sample-link:hover {
+      text-decoration: underline;
+      color: var(--primary-hover);
+    }
+
+    .error-banner {
+      margin-top: 1.5rem;
+      padding: 0.9rem 1.2rem;
+      background: var(--danger-soft);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      text-align: center;
+      padding: 5rem 1rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+      margin: 0 auto 1.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Dashboard Content Layout ── */
+    .section {
+      margin-bottom: 2.25rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      gap: 1rem;
+    }
+
+    .section-header-left h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-top: 0.25rem;
+    }
+
+    .section-header-left p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .section-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      background: var(--primary-soft);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+    .slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    /* ── KPI Grid ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--border-strong);
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--kpi-accent, var(--primary));
+    }
+
+    .kpi-card.accent-indigo { --kpi-accent: #6366f1; }
+    .kpi-card.accent-cyan { --kpi-accent: #0ea5e9; }
+    .kpi-card.accent-green { --kpi-accent: #10b981; }
+    .kpi-card.accent-amber { --kpi-accent: #f59e0b; }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .kpi-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+    }
+
+    .kpi-card.accent-indigo .kpi-icon-box { background: rgba(99, 102, 241, 0.08); color: #6366f1; }
+    .kpi-card.accent-cyan .kpi-icon-box { background: rgba(14, 165, 233, 0.08); color: #0ea5e9; }
+    .kpi-card.accent-green .kpi-icon-box { background: rgba(16, 185, 129, 0.08); color: #10b981; }
+    .kpi-card.accent-amber .kpi-icon-box { background: rgba(245, 158, 11, 0.08); color: #f59e0b; }
+
+    .kpi-value-wrapper {
+      margin: 0.25rem 0;
+    }
+
+    .kpi-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .kpi-sub strong {
+      color: var(--text-secondary);
+    }
+
+    /* ── Dashboard Main Sections ── */
+    .dashboard-main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    /* ── Aggregation Panel ── */
+    .aggregation-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 2rem;
+    }
+
+    .aggregation-controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .agg-select {
+      min-width: 160px;
+    }
+
+    .aggregation-results {
+      display: flex;
+      gap: 0.85rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .agg-result {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.9rem 1.25rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 220px;
+      animation: slideUp 0.3s ease;
+      position: relative;
+    }
+
+    .agg-result-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+    }
+
+    .agg-result-info {
+      flex: 1;
+    }
+
+    .agg-result-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text);
+    }
+
+    .agg-result-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .agg-result-remove {
+      background: transparent;
+      padding: 0.25rem;
+      border-radius: 50%;
+      color: var(--muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    .agg-result-remove:hover {
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    /* ── Charts Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      height: 440px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.25rem;
+      gap: 1rem;
+    }
+
+    .chart-info h4 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .chart-info p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .chart-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .chart-select {
+      max-width: 120px;
+      font-size: 0.75rem;
+      padding: 0.35rem 1.6rem 0.35rem 0.6rem;
+      background-position: right 0.4rem center;
+      background-size: 0.8rem;
+      height: 32px;
+    }
+
+    .chart-container {
+      position: relative;
+      flex: 1;
+      min-height: 0; /* Important for Canvas resizing in Flexbox */
+    }
+
+    /* Placeholder text inside canvas when axes not selected */
+    .chart-placeholder {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      gap: 0.5rem;
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      border: 1px dashed var(--border);
+    }
+
+    .chart-placeholder svg {
+      width: 32px;
+      height: 32px;
+      color: var(--muted);
+    }
+
+    /* ── Tabbed Data Panel ── */
+    .tabs-bar {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.3rem;
+      margin-bottom: 1.25rem;
+      width: fit-content;
+    }
+
+    .tab-btn {
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.82rem;
+      border: none;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .search-input-wrapper svg {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.6rem 1rem 0.6rem 2.4rem;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .data-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      max-height: 520px;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    table.data-table th,
+    table.data-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    table.data-table th {
+      position: sticky;
+      top: 0;
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      z-index: 2;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    table.data-table th:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    table.data-table th .sort-indicator {
+      margin-left: 0.35rem;
+      font-size: 0.65rem;
+      vertical-align: middle;
+    }
+
+    table.data-table tbody tr {
+      background: var(--surface);
+    }
+
+    table.data-table tbody tr:hover td {
+      background: var(--bg-hover);
+    }
+
+    /* Statistics summary styling */
+    .stat-type-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .stat-type-badge.numeric {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .stat-type-badge.categorical {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .summary-details-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+    }
+
+    .summary-details-list li {
+      font-size: 0.78rem;
+    }
+
+    .summary-details-list strong {
+      color: var(--text);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Pagination ── */
+    .pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .pagination-info {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .pagination-info strong {
+      color: var(--text-secondary);
+    }
+
+    .pagination-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .pagination-btn {
+      min-width: 32px;
+      height: 32px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      font-size: 0.8rem;
+      border-radius: 6px;
+      font-weight: 700;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .pagination-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* ── Export Modal ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: transparent;
+      padding: 0.35rem;
+      color: var(--muted);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+      background: var(--bg-hover);
+    }
+
+    .modal-header h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-header p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      font-weight: 500;
+    }
+
+    .modal-body {
+      margin-top: 1.5rem;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.9rem 1.25rem;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--card-shadow-hover);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transform: translateX(450px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.info { border-left-color: var(--primary); }
+
+    .toast-icon.success { color: var(--success); }
+    .toast-icon.error { color: var(--danger); }
+    .toast-icon.info { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-icon">DP</div>
+      <div>
+        <h1>DataViz Pro</h1>
+        <span>Enterprise Data Analytics</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <!-- Theme Toggle Button -->
+      <button class="btn-icon theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle dark mode">
+        <!-- Sun Icon -->
+        <svg class="icon sun-icon" id="sunIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <!-- Moon Icon -->
+        <svg class="icon moon-icon hidden" id="moonIcon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      
+      <!-- Primary Actions when file is loaded -->
+      <button class="btn btn-outline hidden" id="navUploadBtn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Upload File
+      </button>
+    </div>
+  </nav>
+
+  <!-- Secondary Dynamic Dashboard Toolbar -->
+  <div class="dashboard-toolbar hidden" id="dashboardToolbar">
+    <div class="toolbar-left">
+      <div class="file-pill" id="navFilePill">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span id="navFileName">Filename.xlsx</span>
+      </div>
+      <div class="sheet-select-wrapper" id="sheetSelectWrapper">
+        <label for="sheetSelect">Active Sheet</label>
+        <select id="sheetSelect" class="styled-select"></select>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-outline" id="toolbarChangeFileBtn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        Change File
+      </button>
+      <button class="btn btn-primary" id="exportBtn" disabled>
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export Dataset
+      </button>
+    </div>
+  </div>
+
+  <main class="page">
+    
+    <!-- Upload Screen (Default) -->
+    <section class="hero-upload slide-up" id="uploadSection">
+      <div class="hero-text">
+        <h2>Upload &amp; Analyze Dataset</h2>
+        <p>Drop your spreadsheets here to automatically generate visual analytics, custom summaries, aggregations, and statistics.</p>
+      </div>
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">
+          <svg class="icon" style="width:32px; height:32px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        </div>
+        <p>Drop your Excel file here or click to browse</p>
+        <small>Supports standard .xlsx and .xls sheets</small>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden" />
+      </div>
+      <div class="sample-trigger-wrapper">
+        <span>No file on hand?</span>
+        <a class="sample-link" id="loadSampleBtn">Explore with Sample Sales Data</a>
+      </div>
+      <div id="errorBox" class="error-banner hidden">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="errorText">Error processing file</span>
+      </div>
+    </section>
+
+    <!-- Processing Loader -->
+    <div id="loading" class="loading-overlay hidden">
+      <div class="loader"></div>
+      <p style="color: var(--text-secondary); font-weight: 700;">Processing worksheet data…</p>
+      <span style="color: var(--muted); font-size: 0.8rem; font-weight: 500;">Calculating statistics &amp; mapping visuals</span>
+    </div>
+
+    <!-- Active Analytics Dashboard Dashboard (Hidden by default) -->
+    <div id="dashboard" class="hidden">
+
+      <!-- KPI Metric Overview -->
+      <section class="section slide-up">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-tag">Key Performance Indicators</span>
+            <h3>Worksheet Summary</h3>
+            <p>High-level metrics derived from the active sheet</p>
+          </div>
+        </div>
+        <div class="kpi-grid" id="kpiOverview"></div>
+      </section>
+
+      <!-- Calculations / Aggregation Engine -->
+      <section class="section slide-up">
+        <div class="aggregation-panel">
+          <div class="section-header" style="margin-bottom:0.5rem">
+            <div class="section-header-left">
+              <span class="section-tag">Pivot Operations</span>
+              <h3 style="margin-top:0.25rem">Calculations Calculator</h3>
+              <p>Apply mathematical functions directly to numeric fields</p>
+            </div>
+          </div>
+          <div class="aggregation-controls">
+            <select id="aggColumn" class="styled-select agg-select">
+              <option value="">Select Column</option>
+            </select>
+            <select id="aggFunction" class="styled-select">
+              <option value="sum">Sum (Total)</option>
+              <option value="avg">Average (Mean)</option>
+              <option value="count">Count (Rows)</option>
+              <option value="min">Minimum Value</option>
+              <option value="max">Maximum Value</option>
+            </select>
+            <button class="btn btn-primary" id="calculateAgg">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              Run Calculation
+            </button>
+          </div>
+          <div class="aggregation-results" id="aggregationResults">
+            <!-- Dynamic calculation output will render here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Graphical Charts -->
+      <section class="section slide-up">
+        <div class="section-header">
+          <div class="section-header-left">
+            <span class="section-tag">Visual Analytics</span>
+            <h3>Interactive Charts</h3>
+            <p>Visualize data columns as comparison grids or trends</p>
+          </div>
+        </div>
+        
+        <div class="charts-grid">
+          <!-- Bar Chart Card -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>Bar Comparison Chart</h4>
+                <p>Categorical summaries &amp; column comparatives</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select class="styled-select chart-select" id="barXAxis" aria-label="Bar Chart X Axis"></select>
+                  <select class="styled-select chart-select" id="barYAxis" aria-label="Bar Chart Y Axis"></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('barChart', 'bar_chart')" title="Save Chart Image">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="chart-placeholder hidden" id="barChartPlaceholder">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                Select axes to display Bar chart
+              </div>
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Line Trend Chart Card -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>Line Trend Chart</h4>
+                <p>Continuous parameters &amp; progress tracking</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select class="styled-select chart-select" id="lineXAxis" aria-label="Line Chart X Axis"></select>
+                  <select class="styled-select chart-select" id="lineYAxis" aria-label="Line Chart Y Axis"></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('lineChart', 'line_chart')" title="Save Chart Image">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="chart-placeholder hidden" id="lineChartPlaceholder">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                Select axes to display Line chart
+              </div>
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Pie Breakdowns Card -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>Proportion &amp; Pie Distribution</h4>
+                <p>Individual breakdowns of variable slices</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select class="styled-select chart-select" id="pieLabel" aria-label="Pie Chart Labels"></select>
+                  <select class="styled-select chart-select" id="pieValue" aria-label="Pie Chart Values"></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('pieChart', 'pie_chart')" title="Save Chart Image">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="chart-placeholder hidden" id="pieChartPlaceholder">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                Select axes to display Pie chart
+              </div>
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Area Density Card -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>Area Cumulative Chart</h4>
+                <p>Volume trends &amp; absolute density profiles</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select class="styled-select chart-select" id="areaXAxis" aria-label="Area Chart X Axis"></select>
+                  <select class="styled-select chart-select" id="areaYAxis" aria-label="Area Chart Y Axis"></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('areaChart', 'area_chart')" title="Save Chart Image">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div class="chart-placeholder hidden" id="areaChartPlaceholder">
+                <svg viewBox="0 0 24 24" class="icon"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+                Select axes to display Area chart
+              </div>
+              <canvas id="areaChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Data Explorer Tabbed Panel -->
+      <section class="section slide-up">
+        <div class="section-header" style="margin-bottom:0.75rem">
+          <div class="section-header-left">
+            <span class="section-tag">Data Exploration</span>
+            <h3>Data Table Explorer</h3>
+            <p>Filter, sort, search, and page through your active worksheet</p>
+          </div>
+        </div>
+
+        <!-- Dynamic Navigation Tabs -->
+        <div class="tabs-bar" id="tabsBar">
+          <button class="tab-btn active" data-tab="data">Raw Spreadsheet Rows</button>
+          <button class="tab-btn" data-tab="summary">Statistical Summary Metrics</button>
+        </div>
+
+        <!-- Table Toolbar Controls (Hidden for stats tab since stats is aggregates) -->
+        <div class="table-toolbar" id="tableToolbar">
+          <div class="search-input-wrapper">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="tableSearch" placeholder="Search values across cells..." />
+          </div>
+          <select class="styled-select" id="filterColumn" style="min-width: 140px;">
+            <option value="">Filter by Column</option>
+          </select>
+          <select class="styled-select" id="filterValue" style="display:none; min-width: 140px;">
+            <option value="">Select Value</option>
+          </select>
+          <button class="btn btn-outline" id="clearFilter" title="Reset Filters" style="display:none;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Clear Filter
+          </button>
+        </div>
+
+        <!-- Table Render Card -->
+        <div class="data-panel">
+          <div class="table-wrap" id="tableWrap"></div>
+          
+          <!-- Paginator (Hidden for summary tab) -->
+          <div class="pagination-bar" id="paginationBar">
+            <div class="pagination-info" id="paginationInfo">
+              Showing <strong>0</strong> to <strong>0</strong> of <strong>0</strong> items
+            </div>
+            <div class="pagination-buttons" id="paginationButtons"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Export Dataset Modal -->
+  <div class="modal-overlay" id="exportModal">
+    <div class="modal">
+      <button class="modal-close" id="closeModal" aria-label="Close modal">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="modal-header">
+        <h3>Export Processed Dataset</h3>
+        <p>Save calculations and current filters to a storage file</p>
+      </div>
+      <div class="modal-body">
+        <div class="modal-buttons">
+          <button class="btn btn-primary" id="exportCSV">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Save as comma-separated values (.CSV)
+          </button>
+          <button class="btn btn-outline" id="exportJSON">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Save as JavaScript Object Notation (.JSON)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main JavaScript App Logic -->
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const dropzone = $("dropzone");
+    const fileInput = $("fileInput");
+    const exportBtn = $("exportBtn");
+    const errorBox = $("errorBox");
+    const errorText = $("errorText");
+    const loading = $("loading");
+    const dashboard = $("dashboard");
+    const uploadSection = $("uploadSection");
+    const tableWrap = $("tableWrap");
+    const tabsBar = $("tabsBar");
+    const tableSearch = $("tableSearch");
+    const sheetSelect = $("sheetSelect");
+    const sheetSelectWrapper = $("sheetSelectWrapper");
+    const dashboardToolbar = $("dashboardToolbar");
+    const navFilePill = $("navFilePill");
+    const themeToggleBtn = $("themeToggleBtn");
+    const body = document.body;
+
+    // App state
+    let globalWorkbook = null;
+    let selectedFile = null;
+    let activeSheetData = [];
+    let globalHeaders = [];
+    let filteredData = [];
+    let currentPage = 1;
+    let rowsPerPage = 10;
+    let charts = {};
+    let activeTab = "data";
+    let sortColumn = null;
+    let sortDirection = 'asc';
+    let isDarkModeSetting = false;
+
+    // Visual Palette list
+    const CHART_COLORS = [
+      "#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444",
+      "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#3b82f6"
+    ];
+
+    // Theme switching logic
+    function initTheme() {
+      // Check local storage or system preference
+      const savedTheme = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      
+      if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+        enableDarkMode(true);
+      } else {
+        enableDarkMode(false);
+      }
+    }
+
+    function enableDarkMode(enable) {
+      isDarkModeSetting = enable;
+      if (enable) {
+        body.classList.add("dark-mode");
+        $("sunIcon").classList.add("hidden");
+        $("moonIcon").classList.remove("hidden");
+        localStorage.setItem("theme", "dark");
+      } else {
+        body.classList.remove("dark-mode");
+        $("sunIcon").classList.remove("hidden");
+        $("moonIcon").classList.add("hidden");
+        localStorage.setItem("theme", "light");
+      }
+      // Re-style charts dynamically
+      updateChartThemes();
+    }
+
+    themeToggleBtn.addEventListener("click", () => {
+      enableDarkMode(!isDarkModeSetting);
+    });
+
+    function updateChartThemes() {
+      const isDark = body.classList.contains("dark-mode");
+      const textColor = isDark ? '#cbd5e1' : '#475569';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+
+      // Adjust defaults
+      if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = textColor;
+        Chart.defaults.scale.grid.color = gridColor;
+      }
+
+      // Re-draw active charts
+      Object.keys(charts).forEach(chartKey => {
+        const chart = charts[chartKey];
+        if (chart) {
+          if (chart.config.type !== 'pie') {
+            if (chart.options.scales && chart.options.scales.x) {
+              chart.options.scales.x.grid.color = 'rgba(0, 0, 0, 0)'; // Keep X grids transparent
+              chart.options.scales.x.ticks.color = textColor;
+              chart.options.scales.x.title.color = textColor;
+            }
+            if (chart.options.scales && chart.options.scales.y) {
+              chart.options.scales.y.grid.color = gridColor;
+              chart.options.scales.y.ticks.color = textColor;
+              chart.options.scales.y.title.color = textColor;
+            }
+          } else {
+            if (chart.options.plugins && chart.options.plugins.legend) {
+              chart.options.plugins.legend.labels.color = textColor;
+            }
+          }
+          if (chart.options.plugins && chart.options.plugins.tooltip) {
+            chart.options.plugins.tooltip.backgroundColor = isDark ? '#1e293b' : '#ffffff';
+            chart.options.plugins.tooltip.titleColor = isDark ? '#f8fafc' : '#0f172a';
+            chart.options.plugins.tooltip.bodyColor = isDark ? '#cbd5e1' : '#475569';
+            chart.options.plugins.tooltip.borderColor = isDark ? '#334155' : '#e2e8f0';
+          }
+          chart.update();
+        }
+      });
+    }
+
+    // Interactive Toasts
+    function showToast(message, type = 'success') {
+      const container = $("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      
+      let icon = '';
+      if (type === 'success') {
+        icon = `<svg class="icon toast-icon success" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="9 11 12 14 22 4"/></svg>`;
+      } else if (type === 'error') {
+        icon = `<svg class="icon toast-icon error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+      } else {
+        icon = `<svg class="icon toast-icon info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+      }
+
+      toast.innerHTML = `
+        ${icon}
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      
+      // Trigger animation
+      setTimeout(() => toast.classList.add("show"), 10);
+      
+      // Auto remove
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 350);
+      }, 4000);
+    }
+
+    // Triggering file uploads
+    dropzone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        processUploadedFile(e.target.files[0]);
+      }
+    });
+
+    $("navUploadBtn").addEventListener("click", () => fileInput.click());
+    $("toolbarChangeFileBtn").addEventListener("click", () => fileInput.click());
+
+    // Drag-and-drop actions
+    ["dragenter", "dragover"].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+      });
+    });
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processUploadedFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // Load Sample Data (Sales analytics scenario)
+    $("loadSampleBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedFile = {
+        name: "Sample_Sales_Data.xlsx",
+        size: 24500
+      };
+      
+      const sampleSales = [
+        { "Order Date": "2026-01-10", "Category": "Technology", "Region": "West", "Sales": 1240.50, "Profit": 320.10, "Units": 3, "Customer": "GlowCorp" },
+        { "Order Date": "2026-01-12", "Category": "Furniture", "Region": "West", "Sales": 840.00, "Profit": -12.50, "Units": 2, "Customer": "GlowCorp" },
+        { "Order Date": "2026-01-15", "Category": "Office Supplies", "Region": "East", "Sales": 150.20, "Profit": 45.30, "Units": 5, "Customer": "Zenix Co" },
+        { "Order Date": "2026-01-16", "Category": "Technology", "Region": "East", "Sales": 2400.00, "Profit": 610.00, "Units": 8, "Customer": "Acme Inc" },
+        { "Order Date": "2026-01-19", "Category": "Office Supplies", "Region": "North", "Sales": 95.80, "Profit": 18.20, "Units": 4, "Customer": "Acme Inc" },
+        { "Order Date": "2026-01-20", "Category": "Furniture", "Region": "North", "Sales": 540.00, "Profit": 110.00, "Units": 1, "Customer": "Nexus Enterprise" },
+        { "Order Date": "2026-01-22", "Category": "Technology", "Region": "South", "Sales": 1850.00, "Profit": 490.50, "Units": 4, "Customer": "Nexus Enterprise" },
+        { "Order Date": "2026-01-24", "Category": "Office Supplies", "Region": "South", "Sales": 310.00, "Profit": 85.00, "Units": 10, "Customer": "Zenix Co" },
+        { "Order Date": "2026-01-26", "Category": "Furniture", "Region": "East", "Sales": 1150.00, "Profit": 152.00, "Units": 3, "Customer": "Alpha Group" },
+        { "Order Date": "2026-01-28", "Category": "Technology", "Region": "North", "Sales": 3450.00, "Profit": 980.00, "Units": 6, "Customer": "Alpha Group" },
+        { "Order Date": "2026-02-01", "Category": "Office Supplies", "Region": "West", "Sales": 78.40, "Profit": 22.10, "Units": 2, "Customer": "GlowCorp" },
+        { "Order Date": "2026-02-03", "Category": "Furniture", "Region": "South", "Sales": 920.00, "Profit": 220.00, "Units": 5, "Customer": "Acme Inc" },
+        { "Order Date": "2026-02-05", "Category": "Technology", "Region": "West", "Sales": 1600.00, "Profit": 390.00, "Units": 4, "Customer": "GlowCorp" },
+        { "Order Date": "2026-02-08", "Category": "Office Supplies", "Region": "East", "Sales": 28.00, "Profit": 9.40, "Units": 1, "Customer": "Zenix Co" },
+        { "Order Date": "2026-02-12", "Category": "Furniture", "Region": "West", "Sales": 710.00, "Profit": -45.00, "Units": 3, "Customer": "Nexus Enterprise" }
+      ];
+
+      loadVisualDashboard(sampleSales, ["Order Date", "Category", "Region", "Sales", "Profit", "Units", "Customer"]);
+      showToast("Loaded sample sales database!");
+    });
+
+    function getDefaultSheetName(sheetNames) {
+      const priorityKeywords = ['form', 'request', 'tracking', 'plan', 'data', 'sales', 'detail'];
+      const skipKeywords = ['instruction', 'readme', 'dictionary', 'config', 'guide'];
+
+      // Check Priority 1
+      for (const name of sheetNames) {
+        const lower = name.toLowerCase();
+        if (priorityKeywords.some(kw => lower.includes(kw)) && !skipKeywords.some(kw => lower.includes(kw))) {
+          return name;
+        }
+      }
+
+      // Check Priority 2
+      for (const name of sheetNames) {
+        const lower = name.toLowerCase();
+        if (!skipKeywords.some(kw => lower.includes(kw))) {
+          return name;
+        }
+      }
+
+      return sheetNames[0];
+    }
+
+    function findHeaderRowIndex(rows) {
+      let maxCols = 0;
+      let bestRowIndex = 0;
+      const limit = Math.min(rows.length, 15);
+      for (let i = 0; i < limit; i++) {
+        const row = rows[i];
+        if (!row) continue;
+        const colCount = row.filter(cell => cell !== undefined && cell !== null && String(cell).trim() !== "").length;
+        if (colCount > maxCols) {
+          maxCols = colCount;
+          bestRowIndex = i;
+        }
+      }
+      return bestRowIndex;
+    }
+
+    function processUploadedFile(file) {
+      if (!file) return;
+      selectedFile = file;
+      
+      const reader = new FileReader();
+      
+      // Trigger loader styling
+      loading.classList.remove("hidden");
+      uploadSection.classList.add("hidden");
+      errorBox.classList.add("hidden");
+      
+      const startTime = Date.now();
+
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          globalWorkbook = workbook;
+          
+          const sheetNames = workbook.SheetNames;
+          if (!sheetNames || sheetNames.length === 0) {
+            throw new Error("This workbook doesn't contain any valid worksheets");
+          }
+
+          // Render sheet selector values
+          sheetSelect.innerHTML = "";
+          sheetNames.forEach(sheet => {
+            const option = document.createElement("option");
+            option.value = sheet;
+            option.textContent = sheet;
+            sheetSelect.appendChild(option);
+          });
+
+          if (sheetNames.length > 1) {
+            sheetSelectWrapper.style.display = "inline-flex";
+          } else {
+            sheetSelectWrapper.style.display = "none";
+          }
+
+          // Initial load of smart default sheet
+          const defaultSheet = getDefaultSheetName(sheetNames);
+          sheetSelect.value = defaultSheet;
+          
+          loadSheetData(defaultSheet);
+          
+          showToast(`Loaded workbook file: ${file.name}`);
+        } catch (err) {
+          console.error(err);
+          showFileError(`Failed to parse file structure: ${err.message}`);
+        } finally {
+          loading.classList.add("hidden");
+        }
+      };
+
+      reader.onerror = function() {
+        showFileError("FileReader encountered a read error.");
+        loading.classList.add("hidden");
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    function showFileError(msg) {
+      errorText.textContent = msg;
+      errorBox.classList.remove("hidden");
+      uploadSection.classList.remove("hidden");
+      dashboard.classList.add("hidden");
+      dashboardToolbar.classList.add("hidden");
+    }
+
+    // Handles switching sheets
+    sheetSelect.addEventListener("change", (e) => {
+      if (globalWorkbook) {
+        loadSheetData(e.target.value);
+        showToast(`Switched sheet view to: ${e.target.value}`);
+      }
+    });
+
+    function loadSheetData(sheetName) {
+      try {
+        const worksheet = globalWorkbook.Sheets[sheetName];
+        // Parse sheet to array of rows
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        
+        if (!jsonData || jsonData.length === 0) {
+          showEmptyDashboardState(sheetName, "This sheet is empty.");
+          return;
+        }
+
+        // Find the best header row
+        const headerRowIndex = findHeaderRowIndex(jsonData);
+        const headerRow = jsonData[headerRowIndex];
+        
+        if (!headerRow) {
+          showEmptyDashboardState(sheetName, "No valid data columns found in this sheet.");
+          return;
+        }
+
+        // Map headers, keeping track of original column indexes
+        const headers = [];
+        headerRow.forEach((cell, index) => {
+          const val = cell !== undefined && cell !== null ? String(cell).trim() : "";
+          if (val !== "") {
+            // Check for duplicates
+            let uniqueName = val;
+            let counter = 1;
+            while (headers.some(h => h.name === uniqueName)) {
+              uniqueName = `${val}_${counter}`;
+              counter++;
+            }
+            headers.push({ name: uniqueName, index: index });
+          }
+        });
+
+        if (headers.length === 0) {
+          showEmptyDashboardState(sheetName, "Could not detect column headers in this sheet.");
+          return;
+        }
+
+        // Extract row objects, starting from the row after the header row
+        const dataRows = jsonData.slice(headerRowIndex + 1);
+        const rows = dataRows.map(row => {
+          const obj = {};
+          headers.forEach(h => {
+            let val = row[h.index];
+            if (val !== undefined && val !== null && val !== '') {
+              const numVal = Number(val);
+              if (!isNaN(numVal) && String(val).trim() !== "") {
+                val = numVal;
+              }
+            } else {
+              val = '';
+            }
+            obj[h.name] = val;
+          });
+          return obj;
+        }).filter(row => Object.values(row).some(v => v !== '')); // Remove empty rows
+
+        const headerNames = headers.map(h => h.name);
+        loadVisualDashboard(rows, headerNames);
+      } catch (err) {
+        console.error(err);
+        showToast(`Failed loading sheet "${sheetName}": ${err.message}`, "error");
+      }
+    }
+
+    function showEmptyDashboardState(sheetName, message) {
+      // Clear data states
+      activeSheetData = [];
+      globalHeaders = [];
+      filteredData = [];
+      currentPage = 1;
+      
+      // Setup dynamic filters empty state
+      $("filterColumn").innerHTML = '<option value="">Filter by Column</option>';
+      if ($("filterValue")) $("filterValue").style.display = "none";
+      if ($("clearFilter")) $("clearFilter").style.display = "none";
+      
+      // Update KPIs
+      $("kpiOverview").innerHTML = `
+        <div class="kpi-card accent-indigo">
+          <div class="kpi-value-wrapper"><span class="kpi-value">0</span></div>
+          <div class="kpi-sub">Total records</div>
+        </div>
+      `;
+      
+      // Clear aggregator
+      $("aggColumn").innerHTML = '<option value="">Select Column</option>';
+      $("aggregationResults").innerHTML = "";
+
+      // Clear charts
+      destroyCharts();
+      $("barChartPlaceholder").classList.remove("hidden");
+      $("lineChartPlaceholder").classList.remove("hidden");
+      $("pieChartPlaceholder").classList.remove("hidden");
+      $("areaChartPlaceholder").classList.remove("hidden");
+
+      // Show message in table area
+      tableWrap.innerHTML = `
+        <div style="padding: 4rem 2rem; text-align: center; color: var(--muted);">
+          <svg class="icon" style="width:48px; height:48px; margin-bottom:1rem;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style="font-weight:700; font-size:1.1rem; color:var(--text);">${message}</p>
+          <span style="font-size:0.85rem;">This tab does not contain a standard data grid or tabular report. Please switch to another sheet tab.</span>
+        </div>
+      `;
+      $("paginationBar").style.display = "none";
+      
+      dashboard.classList.remove("hidden");
+      dashboardToolbar.classList.remove("hidden");
+      uploadSection.classList.add("hidden");
+      
+      showToast(`Sheet "${sheetName}" has no tabular data.`, "info");
+    }
+
+    function loadVisualDashboard(data, headers) {
+      activeSheetData = data;
+      globalHeaders = headers;
+      filteredData = [...activeSheetData];
+      
+      // Clean up previous app states
+      sortColumn = null;
+      currentPage = 1;
+      $("tableSearch").value = "";
+      
+      // Setup dynamic filters
+      setupTableFilters();
+      
+      // Setup header titles
+      $("navFileName").textContent = selectedFile.name;
+      dashboardToolbar.classList.remove("hidden");
+      uploadSection.classList.add("hidden");
+      
+      // Calculate executive KPIs
+      renderKPIs();
+
+      // Set up aggregation column selections
+      setupAggregationOptions();
+
+      // Configure chart axis options
+      configureChartAxes();
+
+      // Render views
+      renderTable();
+      updateCharts();
+
+      // Show dashboard
+      dashboard.classList.remove("hidden");
+      exportBtn.disabled = false;
+      
+      // Smooth scroll back to top
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) return "—";
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Renders the summary KPI metrics
+    function renderKPIs() {
+      const container = $("kpiOverview");
+      
+      // 1. Calculate Completeness Rate
+      let totalCells = activeSheetData.length * globalHeaders.length;
+      let filledCells = 0;
+      activeSheetData.forEach(row => {
+        globalHeaders.forEach(h => {
+          if (row[h] !== undefined && row[h] !== null && row[h] !== '') {
+            filledCells++;
+          }
+        });
+      });
+      const completeness = totalCells > 0 ? ((filledCells / totalCells) * 100).toFixed(1) : 0;
+
+      container.innerHTML = `
+        <div class="kpi-card accent-indigo">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Records</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value-wrapper">
+            <span class="kpi-value">${activeSheetData.length.toLocaleString()}</span>
+          </div>
+          <div class="kpi-sub">Total rows in selected sheet</div>
+        </div>
+
+        <div class="kpi-card accent-cyan">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Fields</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value-wrapper">
+            <span class="kpi-value">${globalHeaders.length}</span>
+          </div>
+          <div class="kpi-sub">Data columns / headers</div>
+        </div>
+
+        <div class="kpi-card accent-green">
+          <div class="kpi-header">
+            <span class="kpi-label">File Size</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value-wrapper">
+            <span class="kpi-value">${formatFileSize(selectedFile?.size)}</span>
+          </div>
+          <div class="kpi-sub">Uploaded storage size</div>
+        </div>
+
+        <div class="kpi-card accent-amber">
+          <div class="kpi-header">
+            <span class="kpi-label">Data Fill Rate</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value-wrapper">
+            <span class="kpi-value">${completeness}%</span>
+          </div>
+          <div class="kpi-sub">Total cell occupancy rate</div>
+        </div>
+      `;
+    }
+
+    // Configure selection dropdowns for aggregation calculations
+    function setupAggregationOptions() {
+      const aggColumn = $("aggColumn");
+      aggColumn.innerHTML = '<option value="">Select Column</option>';
+      
+      // Auto-populate with all columns
+      globalHeaders.forEach(header => {
+        const option = document.createElement("option");
+        option.value = header;
+        option.textContent = header;
+        aggColumn.appendChild(option);
+      });
+      
+      // Clear aggregation results area
+      $("aggregationResults").innerHTML = "";
+    }
+
+    function getNumericColumns() {
+      return globalHeaders.filter(header => {
+        // A column is numeric if at least one row has a number value and others are empty/number
+        return activeSheetData.some(row => {
+          const val = row[header];
+          return val !== '' && !isNaN(val) && typeof val === 'number';
+        });
+      });
+    }
+
+    // Run custom pivot aggregations
+    $("calculateAgg").addEventListener("click", () => {
+      const column = $("aggColumn").value;
+      const func = $("aggFunction").value;
+
+      if (!column) {
+        showToast("Please choose a column first", "error");
+        return;
+      }
+
+      // Collect values, filtering out empty entries
+      const rawValues = filteredData
+        .map(row => row[column])
+        .filter(val => val !== '' && val !== null && val !== undefined);
+
+      const numericValues = rawValues
+        .map(val => Number(val))
+        .filter(val => !isNaN(val));
+
+      // A column is numeric if it contains numbers and mostly parses as numeric
+      const isNumeric = numericValues.length > 0 && (numericValues.length / rawValues.length) > 0.5;
+
+      let result = 0;
+      let label = "";
+
+      if (isNumeric) {
+        const values = numericValues;
+        switch (func) {
+          case 'sum':
+            result = values.reduce((a, b) => a + b, 0);
+            label = `Sum of ${column}`;
+            break;
+          case 'avg':
+            result = values.reduce((a, b) => a + b, 0) / values.length;
+            label = `Average of ${column}`;
+            break;
+          case 'count':
+            result = values.length;
+            label = `Count of ${column}`;
+            break;
+          case 'min':
+            result = Math.min(...values);
+            label = `Min of ${column}`;
+            break;
+          case 'max':
+            result = Math.max(...values);
+            label = `Max of ${column}`;
+            break;
+        }
+      } else {
+        // Non-numeric columns calculations
+        switch (func) {
+          case 'count':
+            result = rawValues.length;
+            label = `Count of ${column}`;
+            break;
+          case 'min':
+            result = [...rawValues].sort()[0] || "—";
+            label = `Alphabetical Min of ${column}`;
+            break;
+          case 'max':
+            result = [...rawValues].sort().reverse()[0] || "—";
+            label = `Alphabetical Max of ${column}`;
+            break;
+          default:
+            result = 0;
+            label = `Sum/Avg (Non-Numeric) of ${column}`;
+            break;
+        }
+      }
+
+      const displayValue = typeof result === 'number' 
+        ? (result % 1 === 0 ? result.toLocaleString() : result.toFixed(2))
+        : String(result);
+      const randId = 'agg_' + Date.now();
+
+      // Prepend the aggregate pill to results card
+      const pill = document.createElement("div");
+      pill.className = "agg-result";
+      pill.id = randId;
+      pill.innerHTML = `
+        <div class="agg-result-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div class="agg-result-info">
+          <div class="agg-result-value" title="${result}">${displayValue}</div>
+          <div class="agg-result-label">${label}</div>
+        </div>
+        <button class="agg-result-remove" onclick="removeAggPill('${randId}')" title="Delete calculation">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      `;
+      $("aggregationResults").insertBefore(pill, $("aggregationResults").firstChild);
+      showToast("Aggregation calculated!");
+    });
+
+    window.removeAggPill = function(id) {
+      const el = $(id);
+      if (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+        setTimeout(() => el.remove(), 250);
+      }
+    };
+
+    // Configure Chart Selection Axes
+    function configureChartAxes() {
+      const selects = [
+        'barXAxis', 'barYAxis',
+        'lineXAxis', 'lineYAxis',
+        'pieLabel', 'pieValue',
+        'areaXAxis', 'areaYAxis'
+      ];
+
+      // Reset select boxes
+      selects.forEach(id => {
+        const select = $(id);
+        select.innerHTML = '';
+      });
+
+      const numericCols = getNumericColumns();
+      const nonNumericCols = globalHeaders.filter(h => !numericCols.includes(h));
+
+      // Auto-choose sensible axes defaults
+      const defaultX = nonNumericCols.length > 0 ? nonNumericCols[0] : globalHeaders[0];
+      const defaultY = numericCols.length > 0 ? numericCols[0] : "ROW_COUNT";
+
+      // Populating options
+      selects.forEach(id => {
+        const select = $(id);
+        const isYSelect = id.includes('YAxis') || id.includes('Value');
+        
+        // Add default label option
+        const placeholder = isYSelect ? "Select Metric" : "Select Label";
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = placeholder;
+        select.appendChild(emptyOption);
+
+        // Add special Row Count option for Y select
+        if (isYSelect) {
+          const rowCountOpt = document.createElement("option");
+          rowCountOpt.value = "ROW_COUNT";
+          rowCountOpt.textContent = "📊 Row Count (Frequency)";
+          if (defaultY === "ROW_COUNT") {
+            rowCountOpt.selected = true;
+          }
+          select.appendChild(rowCountOpt);
+        }
+
+        globalHeaders.forEach(header => {
+          const option = document.createElement("option");
+          option.value = header;
+          option.textContent = header;
+          
+          // Select default
+          if (isYSelect && header === defaultY) {
+            option.selected = true;
+          } else if (!isYSelect && header === defaultX) {
+            option.selected = true;
+          }
+          
+          select.appendChild(option);
+        });
+      });
+    }
+
+    // Chart Event Listeners for rendering
+    ['barXAxis', 'barYAxis'].forEach(id => $(id).addEventListener("change", updateBarChart));
+    ['lineXAxis', 'lineYAxis'].forEach(id => $(id).addEventListener("change", updateLineChart));
+    ['pieLabel', 'pieValue'].forEach(id => $(id).addEventListener("change", updatePieChart));
+    ['areaXAxis', 'areaYAxis'].forEach(id => $(id).addEventListener("change", updateAreaChart));
+
+    function getChartOptions(xAxisLabel, yAxisLabel, isDark) {
+      const textColor = isDark ? '#cbd5e1' : '#475569';
+      const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+      
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDark ? '#1f2937' : '#ffffff',
+            titleColor: isDark ? '#f9fafb' : '#0f172a',
+            bodyColor: isDark ? '#cbd5e1' : '#475569',
+            borderColor: isDark ? '#374151' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 8,
+            titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+            bodyFont: { family: 'Plus Jakarta Sans' }
+          }
+        },
+        scales: {
+          y: {
+            grid: { color: gridColor },
+            ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } },
+            border: { dash: [5, 5] },
+            title: { display: !!yAxisLabel, text: yAxisLabel, color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 11 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { 
+              color: textColor, 
+              font: { family: 'Plus Jakarta Sans', size: 9 },
+              maxRotation: 45,
+              minRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 12
+            },
+            title: { display: !!xAxisLabel, text: xAxisLabel, color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 11 } }
+          }
+        }
+      };
+    }
+
+    function getPieChartOptions(isDark) {
+      const textColor = isDark ? '#cbd5e1' : '#475569';
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: textColor,
+              font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
+              boxWidth: 10,
+              padding: 12
+            }
+          },
+          tooltip: {
+            backgroundColor: isDark ? '#1f2937' : '#ffffff',
+            titleColor: isDark ? '#f9fafb' : '#0f172a',
+            bodyColor: isDark ? '#cbd5e1' : '#475569',
+            borderColor: isDark ? '#374151' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 8,
+            titleFont: { family: 'Plus Jakarta Sans', weight: '700' },
+            bodyFont: { family: 'Plus Jakarta Sans' }
+          }
+        }
+      };
+    }
+
+    // Chart aggregations calculations
+    function summarizeChartData(xAxis, yAxis) {
+      if (!xAxis) return { labels: [], data: [] };
+
+      const categoriesMap = {};
+      
+      // Determine if we should count occurrences or sum values.
+      // We count if: yAxis is not selected, or it is explicitly "ROW_COUNT", 
+      // or if it's a non-numeric column.
+      const isNumericCol = yAxis && getNumericColumns().includes(yAxis);
+      const useCount = !yAxis || yAxis === 'ROW_COUNT' || !isNumericCol;
+
+      filteredData.forEach(row => {
+        const key = row[xAxis] !== undefined && row[xAxis] !== '' ? String(row[xAxis]) : "(Empty)";
+        
+        let val = 1;
+        if (!useCount) {
+          const rawVal = row[yAxis];
+          const numVal = Number(rawVal);
+          val = isNaN(numVal) ? 0 : numVal;
+        }
+
+        if (!categoriesMap[key]) {
+          categoriesMap[key] = 0;
+        }
+        categoriesMap[key] += val;
+      });
+
+      // Sort categories
+      const sortedCategories = Object.keys(categoriesMap).sort((a, b) => {
+        return categoriesMap[b] - categoriesMap[a];
+      });
+
+      const sliceLimit = 15;
+      const displayCategories = sortedCategories.slice(0, sliceLimit);
+
+      const labels = displayCategories;
+      const data = displayCategories.map(cat => categoriesMap[cat]);
+
+      // Handle "Other" category grouping for pie distributions if there are too many slices
+      if (sortedCategories.length > sliceLimit) {
+        labels.push("Other");
+        let otherSum = 0;
+        for (let i = sliceLimit; i < sortedCategories.length; i++) {
+          otherSum += categoriesMap[sortedCategories[i]];
+        }
+        data.push(otherSum);
+      }
+
+      return { labels, data };
+    }
+
+    function updateCharts() {
+      updateBarChart();
+      updateLineChart();
+      updatePieChart();
+      updateAreaChart();
+    }
+
+    function updateBarChart() {
+      const xAxis = $("barXAxis").value;
+      const yAxis = $("barYAxis").value;
+      const placeholder = $("barChartPlaceholder");
+      
+      if (charts.bar) charts.bar.destroy();
+
+      if (!xAxis || !yAxis) {
+        placeholder.classList.remove("hidden");
+        return;
+      }
+      placeholder.classList.add("hidden");
+
+      const { labels, data } = summarizeChartData(xAxis, yAxis);
+      const isDark = body.classList.contains("dark-mode");
+      const ctx = $("barChart").getContext('2d');
+      
+      // Modern linear gradient for bar fills
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.9)'); // Brand Primary
+      gradient.addColorStop(1, 'rgba(14, 165, 233, 0.15)'); // Soft Cyan glow
+
+      charts.bar = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: gradient,
+            hoverBackgroundColor: 'rgba(99, 102, 241, 1)',
+            borderColor: '#6366f1',
+            borderWidth: 1.5,
+            borderRadius: 6,
+          }]
+        },
+        options: getChartOptions(xAxis, yAxis, isDark)
+      });
+    }
+
+    function updateLineChart() {
+      const xAxis = $("lineXAxis").value;
+      const yAxis = $("lineYAxis").value;
+      const placeholder = $("lineChartPlaceholder");
+
+      if (charts.line) charts.line.destroy();
+
+      if (!xAxis || !yAxis) {
+        placeholder.classList.remove("hidden");
+        return;
+      }
+      placeholder.classList.add("hidden");
+
+      const { labels, data } = summarizeChartData(xAxis, yAxis);
+      const isDark = body.classList.contains("dark-mode");
+      const ctx = $("lineChart").getContext('2d');
+
+      // Modern soft background gradient for line fill
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.00)');
+
+      charts.line = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            borderColor: '#10b981',
+            backgroundColor: gradient,
+            borderWidth: 3.5,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#10b981',
+            pointBorderColor: isDark ? '#111827' : '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointHoverBackgroundColor: '#10b981',
+            pointHoverBorderColor: '#fff',
+            pointHoverBorderWidth: 2
+          }]
+        },
+        options: getChartOptions(xAxis, yAxis, isDark)
+      });
+    }
+
+    function updatePieChart() {
+      const labelCol = $("pieLabel").value;
+      const valueCol = $("pieValue").value;
+      const placeholder = $("pieChartPlaceholder");
+
+      if (charts.pie) charts.pie.destroy();
+
+      if (!labelCol || !valueCol) {
+        placeholder.classList.remove("hidden");
+        return;
+      }
+      placeholder.classList.add("hidden");
+
+      const { labels, data } = summarizeChartData(labelCol, valueCol);
+      const isDark = body.classList.contains("dark-mode");
+      const ctx = $("pieChart").getContext('2d');
+
+      charts.pie = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: CHART_COLORS.slice(0, labels.length),
+            borderWidth: 1.5,
+            borderColor: isDark ? '#111827' : '#ffffff',
+          }]
+        },
+        options: getPieChartOptions(isDark)
+      });
+    }
+
+    function updateAreaChart() {
+      const xAxis = $("areaXAxis").value;
+      const yAxis = $("areaYAxis").value;
+      const placeholder = $("areaChartPlaceholder");
+
+      if (charts.area) charts.area.destroy();
+
+      if (!xAxis || !yAxis) {
+        placeholder.classList.remove("hidden");
+        return;
+      }
+      placeholder.classList.add("hidden");
+
+      const { labels, data } = summarizeChartData(xAxis, yAxis);
+      const isDark = body.classList.contains("dark-mode");
+      const ctx = $("areaChart").getContext('2d');
+
+      // Modern linear gradient for area fill
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      gradient.addColorStop(0, 'rgba(14, 165, 233, 0.45)');
+      gradient.addColorStop(1, 'rgba(14, 165, 233, 0.00)');
+
+      charts.area = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            borderColor: '#0ea5e9',
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+            borderWidth: 2
+          }]
+        },
+        options: getChartOptions(xAxis, yAxis, isDark)
+      });
+    }
+
+    // Chart Image Downloader
+    window.exportChartImage = function(canvasId, name) {
+      const canvas = $(canvasId);
+      const chart = charts[canvasId.replace('Chart', '')];
+      if (!chart || chart.options.plugins.legend.display === undefined) {
+        // Verify chart renders
+        showToast("Chart data not loaded yet", "error");
+        return;
+      }
+      
+      const imageURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = imageURL;
+      link.download = `${name || 'chart'}_export.png`;
+      link.click();
+      showToast("Chart exported as image!");
+    };
+
+    // ── Data Explorer view controller ──
+    tabsBar.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("tab-btn")) return;
+      
+      document.querySelectorAll(".tab-btn").forEach((t) => t.classList.remove("active"));
+      e.target.classList.add("active");
+      
+      activeTab = e.target.dataset.tab;
+      
+      const tableToolbar = $("tableToolbar");
+      const paginationBar = $("paginationBar");
+      
+      if (activeTab === "summary") {
+        tableToolbar.style.display = "none";
+        paginationBar.style.display = "none";
+      } else {
+        tableToolbar.style.display = "flex";
+        paginationBar.style.display = "flex";
+      }
+      
+      currentPage = 1;
+      renderTable();
+    });
+
+    // Populate search and column filtering fields
+    function setupTableFilters() {
+      const filterColumn = $("filterColumn");
+      filterColumn.innerHTML = '<option value="">Filter by Column</option>';
+      
+      globalHeaders.forEach(header => {
+        const option = document.createElement("option");
+        option.value = header;
+        option.textContent = header;
+        filterColumn.appendChild(option);
+      });
+
+      $("filterValue").style.display = "none";
+      $("clearFilter").style.display = "none";
+    }
+
+    $("filterColumn").addEventListener("change", (e) => {
+      const column = e.target.value;
+      const filterValue = $("filterValue");
+      
+      if (column) {
+        // Collect unique non-empty values
+        const uniqueValues = [...new Set(activeSheetData.map(row => row[column]))]
+          .filter(v => v !== undefined && v !== null && v !== '')
+          .slice(0, 100); // Caps unique list to 100 values to avoid slow DOM builds
+
+        filterValue.innerHTML = '<option value="">Select Value</option>' +
+          uniqueValues.map(val => `<option value="${val}">${val}</option>`).join('');
+        filterValue.style.display = 'inline-block';
+      } else {
+        filterValue.style.display = 'none';
+        applyDataFiltering();
+      }
+    });
+
+    $("filterValue").addEventListener("change", applyDataFiltering);
+
+    function applyDataFiltering() {
+      const column = $("filterColumn").value;
+      const value = $("filterValue").value;
+
+      if (column && value) {
+        filteredData = activeSheetData.filter(row => String(row[column]) === value);
+        $("clearFilter").style.display = "inline-flex";
+      } else {
+        filteredData = [...activeSheetData];
+        $("clearFilter").style.display = "none";
+      }
+      
+      currentPage = 1;
+      renderTable();
+      updateCharts();
+      renderKPIs();
+    }
+
+    $("clearFilter").addEventListener("click", () => {
+      $("filterColumn").value = '';
+      $("filterValue").style.display = 'none';
+      $("filterValue").value = '';
+      $("clearFilter").style.display = 'none';
+      
+      filteredData = [...activeSheetData];
+      currentPage = 1;
+      renderTable();
+      updateCharts();
+      renderKPIs();
+      showToast("Cleared active table filters");
+    });
+
+    tableSearch.addEventListener("input", () => {
+      currentPage = 1;
+      renderTable();
+    });
+
+    // Sort column handler
+    window.sortTable = function(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+      
+      filteredData.sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+
+        // Parse numeric sorting
+        const numA = Number(valA);
+        const numB = Number(valB);
+        if (!isNaN(numA) && !isNaN(numB) && valA !== '' && valB !== '') {
+          valA = numA;
+          valB = numB;
+        } else {
+          valA = String(valA).toLowerCase();
+          valB = String(valB).toLowerCase();
+        }
+
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      currentPage = 1;
+      renderTable();
+    };
+
+    // Core table drawing coordinator
+    function renderTable() {
+      if (activeTab === "summary") {
+        renderSummaryStatisticsTable();
+        return;
+      }
+
+      if (!filteredData.length) {
+        tableWrap.innerHTML = `
+          <div style="padding: 3rem; text-align: center; color: var(--muted);">
+            <svg class="icon" style="width:40px; height:40px; margin-bottom:1rem;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <p style="font-weight:700;">No matching records found</p>
+            <span style="font-size:0.8rem;">Try clearing search fields or filters</span>
+          </div>
+        `;
+        $("paginationBar").style.display = "none";
+        return;
+      }
+      $("paginationBar").style.display = "flex";
+
+      // Apply quick query search
+      const query = tableSearch.value.toLowerCase().trim();
+      const searched = query
+        ? filteredData.filter((row) => {
+            return Object.values(row).some(val => String(val).toLowerCase().includes(query));
+          })
+        : filteredData;
+
+      // Slice pages
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = searched.slice(start, end);
+
+      // Render Headers
+      const headersHTML = globalHeaders.map(col => {
+        let indicator = '';
+        if (sortColumn === col) {
+          indicator = sortDirection === 'asc' ? ' <span class="sort-indicator">▲</span>' : ' <span class="sort-indicator">▼</span>';
+        }
+        return `<th onclick="sortTable('${col}')">${col}${indicator}</th>`;
+      }).join("");
+
+      // Render cells
+      const bodyHTML = pageData.map(row => {
+        const cells = globalHeaders.map(col => {
+          let cellVal = row[col];
+          if (cellVal === undefined || cellVal === null) cellVal = '';
+          
+          // Align numbers right
+          const isNum = typeof cellVal === 'number';
+          const align = isNum ? ' style="text-align: right; font-family: var(--font-mono);"' : '';
+          
+          // Format numeric values
+          const formatted = isNum ? (cellVal % 1 === 0 ? cellVal.toLocaleString() : cellVal.toFixed(2)) : cellVal;
+          return `<td${align}>${formatted}</td>`;
+        }).join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
+
+      tableWrap.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>${headersHTML}</tr>
+          </thead>
+          <tbody>
+            ${bodyHTML}
+          </tbody>
+        </table>
+      `;
+
+      renderPagination(searched.length);
+    }
+
+    function renderPagination(totalItems) {
+      const totalPages = Math.ceil(totalItems / rowsPerPage);
+      const buttonsContainer = $("paginationButtons");
+      
+      const start = (currentPage - 1) * rowsPerPage + 1;
+      const end = Math.min(currentPage * rowsPerPage, totalItems);
+      
+      $("paginationInfo").innerHTML = totalItems > 0 
+        ? `Showing <strong>${start}</strong> to <strong>${end}</strong> of <strong>${totalItems.toLocaleString()}</strong> items`
+        : `Showing <strong>0</strong> to <strong>0</strong> of <strong>0</strong> items`;
+
+      buttonsContainer.innerHTML = "";
+
+      if (totalPages <= 1) return;
+
+      // 1. Prev Button
+      const prevBtn = document.createElement("button");
+      prevBtn.className = "pagination-btn";
+      prevBtn.innerHTML = "&larr;";
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.addEventListener("click", () => changePage(currentPage - 1));
+      buttonsContainer.appendChild(prevBtn);
+
+      // Render pagination numbers dynamically (collapsing long pages lists)
+      const pageRange = 2; // Show 2 pages left/right of active
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - pageRange && i <= currentPage + pageRange)) {
+          const btn = document.createElement("button");
+          btn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+          btn.textContent = i;
+          btn.addEventListener("click", () => changePage(i));
+          buttonsContainer.appendChild(btn);
+        } else if (i === currentPage - pageRange - 1 || i === currentPage + pageRange + 1) {
+          const dots = document.createElement("span");
+          dots.textContent = "...";
+          dots.style.margin = "0 0.25rem";
+          dots.style.color = "var(--muted)";
+          buttonsContainer.appendChild(dots);
+        }
+      }
+
+      // 2. Next Button
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "pagination-btn";
+      nextBtn.innerHTML = "&rarr;";
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.addEventListener("click", () => changePage(currentPage + 1));
+      buttonsContainer.appendChild(nextBtn);
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      renderTable();
+    }
+
+    // ── Generate Statistical Summary Tab Details ──
+    function renderSummaryStatisticsTable() {
+      // Columns: [Field Name, Data Type, Populated Count, Null/Missing Count, Unique Values, Distribution Stats]
+      const stats = globalHeaders.map(col => {
+        const values = activeSheetData.map(r => r[col]).filter(v => v !== undefined && v !== null && v !== '');
+        const total = activeSheetData.length;
+        const count = values.length;
+        const missing = total - count;
+        const uniques = [...new Set(values)].length;
+
+        // Categorize Data Type
+        const numericVals = values.filter(v => typeof v === 'number');
+        const isNumeric = numericVals.length > 0 && (numericVals.length / values.length) > 0.7;
+
+        let detailsHTML = "";
+        if (isNumeric) {
+          const sum = numericVals.reduce((a, b) => a + b, 0);
+          const mean = sum / numericVals.length;
+          const min = Math.min(...numericVals);
+          const max = Math.max(...numericVals);
+          
+          // Median calculation
+          const sorted = [...numericVals].sort((a, b) => a - b);
+          const mid = Math.floor(sorted.length / 2);
+          const median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+
+          detailsHTML = `
+            <ul class="summary-details-list">
+              <li>Mean: <strong>${mean.toFixed(2)}</strong></li>
+              <li>Median: <strong>${median.toFixed(2)}</strong></li>
+              <li>Min: <strong>${min.toFixed(2)}</strong></li>
+              <li>Max: <strong>${max.toFixed(2)}</strong></li>
+            </ul>
+          `;
+        } else {
+          // Categorical frequency breakdown
+          const freqMap = {};
+          values.forEach(v => {
+            const key = String(v);
+            freqMap[key] = (freqMap[key] || 0) + 1;
+          });
+
+          const sortedFreq = Object.keys(freqMap).sort((a, b) => freqMap[b] - freqMap[a]);
+          const modeVal = sortedFreq[0] || "—";
+          const modeCount = freqMap[modeVal] || 0;
+          const pct = count > 0 ? ((modeCount / count) * 100).toFixed(1) : 0;
+
+          detailsHTML = `
+            <ul class="summary-details-list">
+              <li>Top Value: <strong>"${modeVal}"</strong></li>
+              <li>Occurrence Rate: <strong>${pct}%</strong> (${modeCount} rows)</li>
+            </ul>
+          `;
+        }
+
+        return {
+          colName: col,
+          type: isNumeric ? 'numeric' : 'categorical',
+          count,
+          missing,
+          uniques,
+          detailsHTML
+        };
+      });
+
+      const rowsHTML = stats.map(st => {
+        const typeBadge = st.type === 'numeric' 
+          ? `<span class="stat-type-badge numeric">Numeric</span>` 
+          : `<span class="stat-type-badge categorical">Category</span>`;
+          
+        return `
+          <tr>
+            <td style="font-weight: 700; color: var(--text);">${st.colName}</td>
+            <td>${typeBadge}</td>
+            <td style="font-family: var(--font-mono);">${st.count.toLocaleString()}</td>
+            <td style="font-family: var(--font-mono);">${st.missing.toLocaleString()}</td>
+            <td style="font-family: var(--font-mono);">${st.uniques.toLocaleString()}</td>
+            <td>${st.detailsHTML}</td>
+          </tr>
+        `;
+      }).join("");
+
+      tableWrap.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Field Name</th>
+              <th>Data Type</th>
+              <th>Count (Filled)</th>
+              <th>Missing Rows</th>
+              <th>Unique Values</th>
+              <th>Analysis Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHTML}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ── Export Modal & Formats logic ──
+    $("exportBtn").addEventListener("click", () => {
+      $("exportModal").classList.add("active");
+    });
+
+    $("closeModal").addEventListener("click", () => {
+      $("exportModal").classList.remove("active");
+    });
+
+    // Close modal on background overlay clicks
+    $("exportModal").addEventListener("click", (e) => {
+      if (e.target === $("exportModal")) {
+        $("exportModal").classList.remove("active");
+      }
+    });
+
+    $("exportCSV").addEventListener("click", () => {
+      if (activeSheetData.length === 0) return;
+      
+      const csvContent = [
+        globalHeaders.join(','),
+        ...activeSheetData.map(row => {
+          return globalHeaders.map(h => {
+            let cell = row[h];
+            if (cell === undefined || cell === null) cell = '';
+            // Quote commas to prevent parse breaks
+            if (String(cell).includes(',')) {
+              cell = `"${cell}"`;
+            }
+            return cell;
+          }).join(',');
+        })
+      ].join('\n');
+
+      downloadFile(csvContent, 'DataVizPro_Export.csv', 'text/csv');
+      $("exportModal").classList.remove("active");
+      showToast("Dataset exported as CSV!");
+    });
+
+    $("exportJSON").addEventListener("click", () => {
+      if (activeSheetData.length === 0) return;
+      const jsonContent = JSON.stringify(activeSheetData, null, 2);
+      downloadFile(jsonContent, 'DataVizPro_Export.json', 'application/json');
+      $("exportModal").classList.remove("active");
+      showToast("Dataset exported as JSON!");
+    });
+
+    function downloadFile(content, filename, type) {
+      const blob = new Blob([content], { type: type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Initialize Page Settings
+    window.addEventListener("DOMContentLoaded", () => {
+      initTheme();
+    });
+
+  </script>
+</body>
+</html>
