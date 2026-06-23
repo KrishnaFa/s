@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DataViz Pro — Professional Excel analytics dashboard. Upload .xlsx files, visualise data with charts, stats and exports." />
+  <title>DataViz Pro — Enterprise Data Analytics</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+
+<!-- ───────────────────── NAVBAR ───────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="brand">
+    <div class="brand-icon">DV</div>
+    <div>
+      <h1>DataViz Pro</h1>
+      <span>Enterprise Analytics Platform</span>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <button id="exportBtn" class="btn btn-outline">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button id="resetBtn" class="btn-icon" title="Upload new file">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+    <button id="themeToggleBtn" class="btn-icon" title="Toggle theme">
+      <!-- Sun -->
+      <svg id="sunIcon" class="icon" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <!-- Moon -->
+      <svg id="moonIcon" class="icon hidden" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ───────────────────── DASHBOARD TOOLBAR ─────────────────────────────── -->
+<div id="dashboardToolbar" class="dashboard-toolbar hidden">
+  <div class="toolbar-left">
+    <span class="file-pill">
+      <svg class="icon" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span id="filePillName">file.xlsx</span>
+      <span style="opacity:.6">·</span>
+      <span id="filePillSize"></span>
+    </span>
+    <!-- Sheet Selector -->
+    <div id="sheetSelectWrapper" class="sheet-select-wrapper hidden">
+      <label for="sheetSelect">
+        <svg class="icon" style="width:13px;height:13px" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+        Sheet:
+      </label>
+      <select id="sheetSelect" class="styled-select"></select>
+    </div>
+  </div>
+  <div class="toolbar-right">
+    <span style="font-size:.78rem;color:var(--muted);font-weight:600">Python · pandas · Flask</span>
+  </div>
+</div>
+
+<!-- ───────────────────── MAIN CONTENT ──────────────────────────────────── -->
+<main class="page">
+
+  <!-- Upload Hero -->
+  <section id="heroSection">
+    <div class="hero-upload slide-up">
+      <div class="hero-text">
+        <h2>Enterprise Data Analytics</h2>
+        <p>Upload your Excel workbook and explore your data with professional charts, statistics, and exports — powered by Python & pandas on the backend.</p>
+      </div>
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload Excel file">
+        <div class="dropzone-icon">
+          <svg class="icon" style="width:28px;height:28px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <p>Drop your Excel file here</p>
+        <small>or click to browse — .xlsx and .xls supported</small>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none" aria-label="File input" />
+      </div>
+
+      <div id="errorBanner" class="error-banner hidden"></div>
+
+      <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1.25rem;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;color:var(--muted)">
+          <svg class="icon" style="width:14px;height:14px;color:var(--success)" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Bar · Line · Pie · Area charts
+        </span>
+        <span style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;color:var(--muted)">
+          <svg class="icon" style="width:14px;height:14px;color:var(--success)" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Statistical summaries
+        </span>
+        <span style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;color:var(--muted)">
+          <svg class="icon" style="width:14px;height:14px;color:var(--success)" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          CSV &amp; JSON export
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loader"></div>
+    <p style="color:var(--muted);font-weight:600;font-size:.95rem">Processing your data with Python…</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div id="dashboardContent" class="hidden">
+
+    <!-- KPI Grid -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-tag">Overview</span>
+          <h3>Key Metrics</h3>
+          <p>High-level summary of your dataset</p>
+        </div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card accent-indigo">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Rows</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiRows">—</div>
+          <div class="kpi-sub">Data records loaded</div>
+        </div>
+        <div class="kpi-card accent-cyan">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Columns</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiCols">—</div>
+          <div class="kpi-sub">Total fields in dataset</div>
+        </div>
+        <div class="kpi-card accent-green">
+          <div class="kpi-header">
+            <span class="kpi-label">Numeric Columns</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiNumeric">—</div>
+          <div class="kpi-sub">Available for aggregation</div>
+        </div>
+        <div class="kpi-card accent-amber">
+          <div class="kpi-header">
+            <span class="kpi-label">Missing Values</span>
+            <div class="kpi-icon-box">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+          </div>
+          <div class="kpi-value" id="kpiMissing">—</div>
+          <div class="kpi-sub">Null / empty cells</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Calculator -->
+    <section class="section">
+      <div class="aggregation-panel">
+        <div class="section-header" style="margin-bottom:0">
+          <div class="section-header-left">
+            <span class="section-tag">Quick Calc</span>
+            <h3>Aggregation Calculator</h3>
+            <p>Python (pandas) powered — runs on the backend</p>
+          </div>
+        </div>
+        <div class="aggregation-controls">
+          <select id="aggColumn" class="styled-select" style="min-width:200px">
+            <option value="">Select Column…</option>
+          </select>
+          <select id="aggFunc" class="styled-select">
+            <option value="count">Count</option>
+            <option value="sum" data-num>Sum</option>
+            <option value="avg" data-num>Average</option>
+            <option value="min">Min</option>
+            <option value="max">Max</option>
+          </select>
+          <button id="calcBtn" class="btn btn-primary">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Calculate
+          </button>
+        </div>
+        <div id="aggregationResults" class="aggregation-results"></div>
+      </div>
+    </section>
+
+    <!-- Data Explorer (Table + Charts + Stats) -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-header-left">
+          <span class="section-tag">Explorer</span>
+          <h3>Data Explorer</h3>
+        </div>
+      </div>
+
+      <div class="tabs-bar" role="tablist">
+        <button class="tab-btn active" data-tab="table"  role="tab">📋 Table</button>
+        <button class="tab-btn"        data-tab="charts" role="tab">📊 Charts</button>
+        <button class="tab-btn"        data-tab="stats"  role="tab">🔬 Statistics</button>
+      </div>
+
+      <!-- TABLE TAB -->
+      <div id="tab-table" class="tab-pane">
+        <div class="table-toolbar">
+          <div class="search-input-wrapper">
+            <svg class="icon" style="width:15px;height:15px" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="searchInput" class="search-input" type="text" placeholder="Search across all columns…" autocomplete="off" />
+          </div>
+          <select id="columnFilterSelect" class="styled-select" style="min-width:160px">
+            <option value="">All Columns</option>
+          </select>
+          <button id="clearSearchBtn" class="btn btn-outline" style="white-space:nowrap">
+            <svg class="icon" style="width:14px;height:14px" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Clear
+          </button>
+        </div>
+        <div class="data-panel">
+          <div class="table-wrap" id="tableContainer"></div>
+          <div id="paginationBar" class="pagination-bar hidden">
+            <div id="paginationInfo" class="pagination-info"></div>
+            <div id="paginationButtons" class="pagination-buttons"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS TAB -->
+      <div id="tab-charts" class="tab-pane hidden">
+        <div class="charts-grid">
+
+          <!-- Bar Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>📊 Bar Chart</h4>
+                <p>Compare categories by magnitude</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select id="barXAxis"  class="styled-select chart-select"><option value="">Label (X)</option></select>
+                  <select id="barYAxis"  class="styled-select chart-select"><option value="">Metric (Y)</option></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('barChart','bar_chart')" title="Download chart">
+                  <svg class="icon" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div id="barChartPlaceholder" class="chart-placeholder">
+                <svg class="icon" style="width:28px;height:28px;color:var(--border-strong)" viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                Select columns to render chart
+              </div>
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Line Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>📈 Line Chart</h4>
+                <p>Track trends over a dimension</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select id="lineXAxis" class="styled-select chart-select"><option value="">Label (X)</option></select>
+                  <select id="lineYAxis" class="styled-select chart-select"><option value="">Metric (Y)</option></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('lineChart','line_chart')" title="Download chart">
+                  <svg class="icon" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div id="lineChartPlaceholder" class="chart-placeholder">
+                <svg class="icon" style="width:28px;height:28px;color:var(--border-strong)" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Select columns to render chart
+              </div>
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Pie Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>🥧 Pie Chart</h4>
+                <p>Distribution of categorical data</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select id="pieLabel" class="styled-select chart-select"><option value="">Label</option></select>
+                  <select id="pieValue" class="styled-select chart-select"><option value="">Value</option></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('pieChart','pie_chart')" title="Download chart">
+                  <svg class="icon" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div id="pieChartPlaceholder" class="chart-placeholder">
+                <svg class="icon" style="width:28px;height:28px;color:var(--border-strong)" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                Select columns to render chart
+              </div>
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Area Chart -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="chart-info">
+                <h4>📉 Area Chart</h4>
+                <p>Visualise cumulative trends</p>
+              </div>
+              <div class="chart-actions">
+                <div class="chart-controls">
+                  <select id="areaXAxis" class="styled-select chart-select"><option value="">Label (X)</option></select>
+                  <select id="areaYAxis" class="styled-select chart-select"><option value="">Metric (Y)</option></select>
+                </div>
+                <button class="btn-icon" onclick="exportChartImage('areaChart','area_chart')" title="Download chart">
+                  <svg class="icon" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <div id="areaChartPlaceholder" class="chart-placeholder">
+                <svg class="icon" style="width:28px;height:28px;color:var(--border-strong)" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                Select columns to render chart
+              </div>
+              <canvas id="areaChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- STATS TAB -->
+      <div id="tab-stats" class="tab-pane hidden">
+        <div class="data-panel">
+          <div id="statsContainer">
+            <div style="padding:3rem;text-align:center;color:var(--muted);font-weight:600">Switch to Statistics tab to load column summaries</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div><!-- /dashboardContent -->
+
+</main>
+
+<!-- ───────────────────── EXPORT MODAL ──────────────────────────────────── -->
+<div id="exportModal" class="modal-overlay" role="dialog" aria-label="Export data">
+  <div class="modal">
+    <button id="closeExportModal" class="modal-close" title="Close">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-header">
+      <h3>Export Data</h3>
+      <p>Download the current (filtered) dataset</p>
+    </div>
+    <div class="modal-body">
+      <div class="modal-buttons">
+        <button id="exportCSVBtn" class="btn btn-primary">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Download as CSV
+        </button>
+        <button id="exportJSONBtn" class="btn btn-outline">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Download as JSON
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────────────── TOAST CONTAINER ───────────────────────────────── -->
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<!-- ───────────────────── SCRIPTS ────────────────────────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>
